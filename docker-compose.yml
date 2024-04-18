@@ -1,0 +1,73 @@
+version: '3.8'
+
+
+include:
+  - path:
+    - ../../DOCKERCOMPONENT/docker-compose-net.yml
+    - ../../DOCKERCOMPONENT/docker-compose-volume.yml
+    - ../openVpn/docker-compose-openvpn.yml
+    env_file: .env
+
+services:
+
+  mysql-keyapi:
+    extends:
+      file: ../keyapi/docker-compose.yml
+      service: mysql-keyapi
+
+  apikey:
+    extends:
+      file: ../keyapi/docker-compose.yml
+      service: apikey
+
+  mysql:
+    container_name: research_DB
+    image: mysql:8.0
+    depends_on:
+      - openvpn
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=bookstack
+      - MYSQL_USER=bookstack
+      - MYSQL_PASSWORD=secret
+      - MYSQL_PORT=3316
+    volumes:
+      - research-data:/var/lib/mysql
+    networks:
+      - research_network
+
+  # bookstack:
+  #   container_name: research
+  #   image: solidnerd/bookstack:22.10.2
+  #   depends_on:
+  #     - mysql
+  #     - openvpn
+  #   restart: always
+  #   environment:
+  #     - DB_HOST=research_DB
+  #     - DB_DATABASE=bookstack
+  #     - DB_USERNAME=bookstack
+  #     - DB_PASSWORD=secret
+  #     - APP_URL=http://192.168.255.1:8085
+  #   volumes:
+  #     - uploads:/var/www/bookstack/public/uploads
+  #     - storage-uploads:/var/www/bookstack/storage/uploads
+  #   networks:
+  #     research_network:
+  #     openvpn:
+  #       ipv4_address: 192.168.192.3
+
+  phpmyadminapione:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    environment:
+      PMA_HOST:  research_DB
+      PMA_PORT: 3316
+    depends_on:
+      - mysql
+      - openvpn
+    networks:
+      research_network:
+      openvpn:
+        ipv4_address: 192.168.192.6
