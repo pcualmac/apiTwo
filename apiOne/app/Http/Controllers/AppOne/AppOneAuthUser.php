@@ -13,17 +13,6 @@ use Illuminate\Support\Facades\Auth;
 
 class AppOneAuthUser extends Controller
 {
-    // static $applicationContext = 'application1';
-    // private $secretKey;
-
-    public function __construct()
-    {
-        // // Get the secret key for the application context from configuration
-        // $this->secretKey = Config::get('app_tokens.' . self::$applicationContext);
-        // // Set the secret key for JWT authentication
-        // JWTAuth::getJWTProvider()->setSecret($this->secretKey);
-    }
-
     public function loginUser(Request $request)
     {
 
