@@ -36,7 +36,7 @@ class AppOneAuthUser extends Controller
         } catch (JWTException $e) {
             return response()->json(['success' => false, 'error' => 'Failed to login, please try again.'], 500);
         }
-        $user = Auth::guard('appOne')->user();
+        $user = Auth::guard('api')->user();
         $customClaims = $user->getJWTCustomClaims();
         $response =[
             'token' => $token,
@@ -66,7 +66,7 @@ class AppOneAuthUser extends Controller
         try {
             $token = $request->bearerToken() ?: $request->query('token');
             JWTAuth::setToken($token, ['key' => $this->secretKey]);
-            $user = Auth::guard('appOne')->user();
+            $user = Auth::guard('api')->user();
             $customClaims = $user->getJWTCustomClaims();
             $response =[
                 'user' => $user,
