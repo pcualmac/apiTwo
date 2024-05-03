@@ -3,71 +3,53 @@ version: '3.8'
 
 include:
   - path:
-    - ../../DOCKERCOMPONENT/docker-compose-net.yml
-    - ../../DOCKERCOMPONENT/docker-compose-volume.yml
-    - ../openVpn/docker-compose-openvpn.yml
+    - ../DOCKERCOMPONENT/docker-compose-net.yml
+    - ../DOCKERCOMPONENT/docker-compose-volume.yml
     env_file: .env
 
 services:
 
-  mysql-keyapi:
-    extends:
-      file: ../keyapi/docker-compose.yml
-      service: mysql-keyapi
 
-  apikey:
-    extends:
-      file: ../keyapi/docker-compose.yml
-      service: apikey
-
-  mysql:
-    container_name: research_DB
+  mysql-apione:
+    container_name: mysql-apione
     image: mysql:8.0
-    depends_on:
-      - openvpn
-    restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=secret
-      - MYSQL_DATABASE=bookstack
-      - MYSQL_USER=bookstack
-      - MYSQL_PASSWORD=secret
-      - MYSQL_PORT=3316
+      - MYSQL_ROOT_PASSWORD=apione
+      - MYSQL_DATABASE=apione
+      - MYSQL_USER=apione
+      - MYSQL_PASSWORD=apione
     volumes:
-      - research-data:/var/lib/mysql
+      - ./mysql_data_jwtrole:/var/lib/mysql
     networks:
-      - research_network
+      - laravel-apione
 
-  # bookstack:
-  #   container_name: research
-  #   image: solidnerd/bookstack:22.10.2
-  #   depends_on:
-  #     - mysql
-  #     - openvpn
-  #   restart: always
-  #   environment:
-  #     - DB_HOST=research_DB
-  #     - DB_DATABASE=bookstack
-  #     - DB_USERNAME=bookstack
-  #     - DB_PASSWORD=secret
-  #     - APP_URL=http://192.168.255.1:8085
-  #   volumes:
-  #     - uploads:/var/www/bookstack/public/uploads
-  #     - storage-uploads:/var/www/bookstack/storage/uploads
-  #   networks:
-  #     research_network:
-  #     openvpn:
-  #       ipv4_address: 192.168.192.3
+  apione:
+    build:
+      dockerfile:  ${PROJECTDIR}${CONTEINERS}/apiOne/Dockerfile
+    container_name: apiOne
+    volumes:
+      - ${PROJECTDIR}${CONTEINERS}/apiOne/apiOne:/var/www/html
+      - ${PROJECTDIR}${CONTEINERS}/apiOne/apache-config.conf:/etc/apache2/sites-available/000-default.conf
+      - ${PROJECTDIR}${CONTEINERS}/apiOne/ports.conf:/etc/apache2/ports.conf
+    ports:
+      - "8082:82"
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+    depends_on:
+      - mysql-apione
+    networks:
+      - laravel-apione
 
   phpmyadminapione:
     image: phpmyadmin/phpmyadmin:latest
     restart: always
     environment:
-      PMA_HOST:  research_DB
-      PMA_PORT: 3316
+      PMA_HOST:  mysql-apione
     depends_on:
-      - mysql
-      - openvpn
+      - mysql-apione
+    ports:
+      - "8037:80"
     networks:
-      research_network:
-      openvpn:
-        ipv4_address: 192.168.192.6
+      - laravel-apione
+      # openvpn:
+      #   ipv4_address: 192.168.192.6
