@@ -21,6 +21,6 @@ use App\Http\Controllers\TestAuth;
     Route::post('register',[AppOneAuthUser::class, 'registerUser']);
     Route::post('login',[AppOneAuthUser::class, 'loginUser']);
 
-    Route::middleware(['auth:appOne'])->group(function () {
+    Route::middleware(['auth:api'])->group(function () {
         Route::get('verify',[AppOneAuthUser::class, 'verifyToken']);
     });
