@@ -13,15 +13,15 @@ use Illuminate\Support\Facades\Auth;
 
 class AppOneAuthUser extends Controller
 {
-    static $applicationContext = 'application1';
-    private $secretKey;
+    // static $applicationContext = 'application1';
+    // private $secretKey;
 
     public function __construct()
     {
-        // Get the secret key for the application context from configuration
-        $this->secretKey = Config::get('app_tokens.' . self::$applicationContext);
-        // Set the secret key for JWT authentication
-        JWTAuth::getJWTProvider()->setSecret($this->secretKey);
+        // // Get the secret key for the application context from configuration
+        // $this->secretKey = Config::get('app_tokens.' . self::$applicationContext);
+        // // Set the secret key for JWT authentication
+        // JWTAuth::getJWTProvider()->setSecret($this->secretKey);
     }
 
     public function loginUser(Request $request)
@@ -29,7 +29,7 @@ class AppOneAuthUser extends Controller
 
         $credentials = $request->only('email', 'password');
         try {
-            $token = auth()->guard('api')->attempt($credentials, ['key' => $this->secretKey]);
+            $token = auth()->guard('api')->attempt($credentials);
             if (!$token) {
                 return response()->json(['success' => false, 'error' => 'Some Error Message'], 401);
             }
@@ -65,14 +65,13 @@ class AppOneAuthUser extends Controller
     {
         try {
             $token = $request->bearerToken() ?: $request->query('token');
-            JWTAuth::setToken($token, ['key' => $this->secretKey]);
+            JWTAuth::setToken($token);
             $user = Auth::guard('api')->user();
             $customClaims = $user->getJWTCustomClaims();
             $response =[
                 'user' => $user,
                 'customClaims' => $customClaims,
                 'claims' => JWTAuth::claims($customClaims)->fromUser($user),
-                'secretKey' => JWTAuth::getJWTProvider()->getSecret($this->secretKey)
             ]; 
             return response()->json(['response' => $response], 200);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
