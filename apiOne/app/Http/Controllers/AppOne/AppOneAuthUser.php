@@ -29,7 +29,7 @@ class AppOneAuthUser extends Controller
 
         $credentials = $request->only('email', 'password');
         try {
-            $token = auth()->guard('appOne')->attempt($credentials, ['key' => $this->secretKey]);
+            $token = auth()->guard('api')->attempt($credentials, ['key' => $this->secretKey]);
             if (!$token) {
                 return response()->json(['success' => false, 'error' => 'Some Error Message'], 401);
             }
