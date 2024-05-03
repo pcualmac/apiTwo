@@ -44,14 +44,14 @@ return [
             'driver' => 'jwt',
             'provider' => 'users',
         ],
-        'admin' => [
-            'driver' => 'jwt',
-            'provider' => 'admins',
-        ],
-        'appOne' => [
-            'driver' => 'jwt',
-            'provider' => 'appOne',
-        ]
+        // 'admin' => [
+        //     'driver' => 'jwt',
+        //     'provider' => 'admins',
+        // ],
+        // 'appOne' => [
+        //     'driver' => 'jwt',
+        //     'provider' => 'appOne',
+        // ]
     ],
 
 
@@ -75,16 +75,16 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
-        ],
-        'admins' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\Admin::class,
-        ],
-        'appOne' => [
-            'driver' => 'eloquent',
             'model' => App\Models\AppOne\AppUser::class,
         ],
+        // 'admins' => [
+        //     'driver' => 'eloquent',
+        //     'model' => App\Models\Admin::class,
+        // ],
+        // 'appOne' => [
+        //     'driver' => 'eloquent',
+        //     'model' => App\Models\AppOne\AppUser::class,
+        // ],
 
         // 'users' => [
         //     'driver' => 'database',
