@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\AppOne\AppOneAuthUser;
+use App\Http\Controllers\AppOneAuthUser;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TestAuth;
 

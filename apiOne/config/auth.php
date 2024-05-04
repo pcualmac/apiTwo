@@ -75,7 +75,8 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\AppOne\AppUser::class,
+            'model' => App\Models\AppUser::class,
+            'secret' => env('JWT_SECRET_APP1'),
         ],
         // 'admins' => [
         //     'driver' => 'eloquent',
