@@ -22,6 +22,7 @@ services:
       - ./mysql_data_jwtrole:/var/lib/mysql
     networks:
       - laravel-apione
+      - db-networks
 
   apione:
     build:
@@ -39,6 +40,7 @@ services:
       - mysql-apione
     networks:
       - laravel-apione
+      - db-networks
 
   phpmyadminapione:
     image: phpmyadmin/phpmyadmin:latest
