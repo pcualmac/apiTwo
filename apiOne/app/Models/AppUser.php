@@ -15,7 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class AppUser extends Authenticatable implements ShouldQueue , JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
-
+    protected $table = 'users';
     protected $fillable = [
         'name',
         'email',
@@ -83,8 +83,8 @@ class AppUser extends Authenticatable implements ShouldQueue , JWTSubject
      */
     public function getJWTCustomClaims()
     {
-       // $result = $this->roles()->get();
-        //return $result->toArray();
-        return [];
+        $result = $this->roles()->get();
+        return $result->toArray();
+        // return [];
     }
 }

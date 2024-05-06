@@ -2,59 +2,80 @@
 
 namespace App\Models;
 
+use App\Models\Role;
+use App\Models\Permission;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+
 
 class User extends Authenticatable implements ShouldQueue , JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $guard = ["api"];
-
     protected $fillable = [
         'name',
         'email',
-        'password',
+        'roles'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $table = 'app_users';
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class)->wherePivot('application_id', 1);
+    }
 
+    public function scopeRole($query, $applicationId)
+    {
+        return $query->where('application_id', '=', $applicationId);
+    }
 
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
+    public function permissions()
+    {
+        $result = $this->hasManyThrough(Permission::class, Role::class);
+        return $result->populationAbove(1);
+    }
+
+    public function hasRole($roleSlug)
+    {
+        return $this->roles()->where('slug', $roleSlug)->exists();
+    }
+
+    public function hasPermission($permissionSlug)
+    {
+        return $this->permissions()->where('slug', $permissionSlug)->exists();
+    }
+
+    // Assign role to user
+    public function assignRole($role)
+    {
+        return $this->roles()->sync([$role]);
+    }
+
+    // Check if user has a certain permission
+    public function hasPermissionTo($permission)
+    {
+        return $this->hasPermissionThroughRole($permission) || $this->hasPermission($permission);
+    }
+
+    // Check if user has a permission through role
+    protected function hasPermissionThroughRole($permission)
+    {
+        foreach ($this->roles as $role) {
+            if ($role->hasPermissionTo($permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function getJWTIdentifier()
     {
-        return $this->getKey();
+        return $this->getKey(); // Assuming your admin model has a primary key called "id".
     }
 
     /**
@@ -64,6 +85,8 @@ class User extends Authenticatable implements ShouldQueue , JWTSubject
      */
     public function getJWTCustomClaims()
     {
+       // $result = $this->roles()->get();
+        //return $result->toArray();
         return [];
     }
 }

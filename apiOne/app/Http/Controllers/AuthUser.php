@@ -3,26 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Config;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Auth;
 
 class AuthUser extends Controller
 {
-
     public function loginUser(Request $request)
     {
+
         $credentials = $request->only('email', 'password');
         try {
-            $token = auth('api')->attempt($credentials);
+            $token = auth()->guard('api')->attempt($credentials);
             if (!$token) {
                 return response()->json(['success' => false, 'error' => 'Some Error Message'], 401);
             }
         } catch (JWTException $e) {
             return response()->json(['success' => false, 'error' => 'Failed to login, please try again.'], 500);
         }
-        return $this->finalResponse($token);
+        $user = Auth::guard('api')->user();
+        $customClaims = $user->getJWTCustomClaims();
+        $response =[
+            'token' => $token,
+            'customClaims' => $customClaims,
+            'claims' => JWTAuth::claims($customClaims)->fromUser($user)
+        ]; 
+        return $this->finalResponse($response);
     }
 
 
@@ -43,11 +53,16 @@ class AuthUser extends Controller
     public function verifyToken(Request $request)
     {
         try {
-            // Attempt to parse and authenticate the token
-            $user = JWTAuth::parseToken()->authenticate();
-
-            // Token is valid and user is authenticated
-            return response()->json(['user' => $user], 200);
+            $token = $request->bearerToken() ?: $request->query('token');
+            JWTAuth::setToken($token);
+            $user = Auth::guard('api')->user();
+            $customClaims = $user->getJWTCustomClaims();
+            $response =[
+                'user' => $user,
+                'customClaims' => $customClaims,
+                'claims' => JWTAuth::claims($customClaims)->fromUser($user),
+            ]; 
+            return response()->json(['response' => $response], 200);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
             // Token has expired
             return response()->json(['error' => 'Token expired'], 401);
